@@ -7,6 +7,7 @@
 [![Protocol](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-orange.svg)]()
 [![Storage](https://img.shields.io/badge/storage-SQLite%20WAL%20(Local)-lightgrey.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
+[![M8ven Score](https://m8ven.ai/badge/mcp/adityadebnath009-project-m-177ur4?v=c5dbde172e8a36a3f855037e0982192b)](https://m8ven.ai/mcp/adityadebnath009-project-m-177ur4?s=readme)
 
 ---
 
