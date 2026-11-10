@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS decisions (
     decided_by TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS tasks (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -21,7 +20,6 @@ CREATE TABLE IF NOT EXISTS tasks (
     notes TEXT DEFAULT '',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS conversation_turns (
     id TEXT PRIMARY KEY,                    -- e.g. 'antigravity:conv_id:step' or 'codex:item_id'
     source TEXT NOT NULL,                   -- 'antigravity', 'codex', 'claude'
@@ -33,7 +31,8 @@ CREATE TABLE IF NOT EXISTS conversation_turns (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexing for fast queries
+--Indexing
+
 CREATE INDEX IF NOT EXISTS idx_turns_source ON conversation_turns(source);
 CREATE INDEX IF NOT EXISTS idx_turns_created ON conversation_turns(created_at);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
