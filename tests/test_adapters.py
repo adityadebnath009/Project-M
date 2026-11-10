@@ -10,6 +10,11 @@ from project_m.adapters.antigravity import (
     harvest_antigravity,
     parse_transcript_line,
 )
+from project_m.adapters.codex import (
+    find_active_codex_rollout,
+    harvest_codex,
+    parse_codex_line,
+)
 from project_m.storage.db import get_recent_turns, init_db
 
 
@@ -162,4 +167,114 @@ def test_harvest_antigravity_e2e_and_deduplication(tmp_path: Path, test_db: Path
 
     # Second harvest on the exact same file: should insert 0 (Deduplication!)
     count2 = harvest_antigravity(transcript_path=log_file, db_path=test_db)
+    assert count2 == 0
+
+
+# -----------------------------------------------------------------------------
+# Codex Harvester Tests
+# -----------------------------------------------------------------------------
+
+def test_parse_codex_line_user_message():
+    """Verify parsing a Codex UserMessage item."""
+    line = json.dumps({
+        "timestamp": "2026-11-08T06:32:27.312Z",
+        "type": "event_msg",
+        "payload": {
+            "type": "item_completed",
+            "thread_id": "thread_abc123",
+            "item": {
+                "type": "UserMessage",
+                "id": "item_user_1",
+                "content": [{"type": "text", "text": "Analyze the backend schema"}],
+            },
+        },
+    })
+    turn = parse_codex_line(line)
+    assert turn is not None
+    assert turn["role"] == "user"
+    assert turn["turn_id"] == "codex:item_user_1"
+    assert turn["source"] == "codex"
+    assert turn["content"] == "Analyze the backend schema"
+    assert turn["session_id"] == "thread_abc123"
+
+
+def test_parse_codex_line_agent_message():
+    """Verify parsing a Codex AgentMessage item."""
+    line = json.dumps({
+        "timestamp": "2026-11-08T06:32:30.252Z",
+        "type": "event_msg",
+        "payload": {
+            "type": "item_completed",
+            "thread_id": "thread_abc123",
+            "item": {
+                "type": "AgentMessage",
+                "id": "msg_agent_99",
+                "content": [{"type": "Text", "text": "I examined the database schema."}],
+            },
+        },
+    })
+    turn = parse_codex_line(line)
+    assert turn is not None
+    assert turn["role"] == "assistant"
+    assert turn["turn_id"] == "codex:msg_agent_99"
+    assert turn["content"] == "I examined the database schema."
+
+
+def test_parse_codex_line_ignores_non_messages():
+    """Verify reasoning, commands, and session metadata lines are ignored."""
+    meta_line = json.dumps({"type": "session_meta", "payload": {}})
+    reasoning_line = json.dumps({
+        "type": "event_msg",
+        "payload": {
+            "type": "item_completed",
+            "item": {"type": "Reasoning", "content": [{"text": "thinking..."}]},
+        },
+    })
+    assert parse_codex_line(meta_line) is None
+    assert parse_codex_line(reasoning_line) is None
+
+
+def test_harvest_codex_e2e_and_deduplication(tmp_path: Path, test_db: Path):
+    """Verify reading a Codex rollout, ingesting turns, and deduplication."""
+    rollout_file = tmp_path / "rollout-test.jsonl"
+    lines = [
+        json.dumps({
+            "timestamp": "2026-11-08T06:32:27.000Z",
+            "payload": {
+                "type": "item_completed",
+                "thread_id": "thread_1",
+                "item": {
+                    "type": "UserMessage",
+                    "id": "msg_1",
+                    "content": [{"type": "text", "text": "First user prompt"}],
+                },
+            },
+        }),
+        json.dumps({
+            "timestamp": "2026-11-08T06:32:30.000Z",
+            "payload": {
+                "type": "item_completed",
+                "thread_id": "thread_1",
+                "item": {
+                    "type": "AgentMessage",
+                    "id": "msg_2",
+                    "content": [{"type": "Text", "text": "First assistant response"}],
+                },
+            },
+        }),
+    ]
+    rollout_file.write_text("\n".join(lines) + "\n")
+
+    # Ingest turns
+    count1 = harvest_codex(rollout_path=rollout_file, db_path=test_db)
+    assert count1 == 2
+
+    stored = get_recent_turns(db_path=test_db)
+    assert len(stored) == 2
+    assert stored[0]["source"] == "codex"
+    assert stored[0]["content"] == "First user prompt"
+    assert stored[1]["content"] == "First assistant response"
+
+    # Second run deduplicates cleanly
+    count2 = harvest_codex(rollout_path=rollout_file, db_path=test_db)
     assert count2 == 0
