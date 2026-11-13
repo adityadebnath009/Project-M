@@ -5,7 +5,7 @@ from typing import Any, Optional
 SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 
 
-def resolve_db_path(custom_path: Optional[str] = None) -> Path:
+def resolve_db_path(custom_path: str | None = None) -> Path:
     """
     Resolves the SQLite database path with project-first priority.
     
@@ -29,7 +29,7 @@ def resolve_db_path(custom_path: Optional[str] = None) -> Path:
         return home_target / "global.db"
 
 
-def get_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
+def get_connection(db_path: Path | None = None) -> sqlite3.Connection:
     """Creates an SQLite connection with WAL mode and row factory enabled."""
     target = db_path or resolve_db_path()
     conn = sqlite3.connect(str(target), timeout=10.0)
@@ -43,7 +43,7 @@ def get_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
     return conn
 
 
-def init_db(db_path: Optional[Path] = None) -> None:
+def init_db(db_path: Path | None = None) -> None:
     """Idempotently initializes database tables from schema.sql."""
     conn = get_connection(db_path)
     with conn, open(SCHEMA_PATH, "r", encoding="utf-8") as f:
@@ -53,7 +53,7 @@ def init_db(db_path: Optional[Path] = None) -> None:
 
 # --- Project Board Operations ---
 
-def set_board_value(key: str, value: str, db_path: Optional[Path] = None) -> None:
+def set_board_value(key: str, value: str, db_path: Path | None = None) -> None:
     """Sets or updates a key-value pair on the living project board."""
     init_db(db_path)
     conn = get_connection(db_path)
@@ -69,7 +69,7 @@ def set_board_value(key: str, value: str, db_path: Optional[Path] = None) -> Non
     conn.close()
 
 
-def get_board(db_path: Optional[Path] = None) -> dict[str, str]:
+def get_board(db_path: Path | None = None) -> dict[str, str]:
     """Retrieves all key-value pairs from the project board."""
     init_db(db_path)
     conn = get_connection(db_path)
@@ -86,7 +86,7 @@ def add_decision(
     rationale: str,
     decided_by: str,
     status: str = "accepted",
-    db_path: Optional[Path] = None,
+    db_path: Path | None = None,
 ) -> None:
     """Records an architectural decision using an atomic upsert."""
     init_db(db_path)
@@ -106,13 +106,31 @@ def add_decision(
 
 
 def get_decisions(
-    limit: int = 10, db_path: Optional[Path] = None
+    limit: int = 10, 
+    status:str | None = None,
+    newest_first: bool = False,
+    db_path: Path | None = None
 ) -> list[dict[str, Any]]:
-    """Retrieves decisions in chronological order."""
+
+    """
+    Retrieves decisions from the ADR ledger.
+    
+    - If status is provided, filters by that status (e.g. 'accepted').
+    - If newest_first is True, orders by created_at DESC (latest first).
+    - If newest_first is False (default), orders chronologically (oldest first).
+    """
     init_db(db_path)
     conn = get_connection(db_path)
-    query = "SELECT * FROM decisions ORDER BY created_at ASC LIMIT ?;"
-    rows = conn.execute(query, (limit,)).fetchall()
+
+    order = "DESC" if newest_first else "ASC"
+
+    if status:
+        query = f" SELECT * FROM decisions WHERE status = ? ORDER BY created_at {order}, id {order} LIMIT ?;"
+        rows = conn.execute(query, (status, limit)).fetchall()
+    else:
+        query = f"SELECT * FROM decisions ORDER BY created_at {order}, id {order} LIMIT ?;"
+        rows = conn.execute(query, (limit,)).fetchall()
+
     conn.close()
     return [dict(r) for r in rows]
 
@@ -123,9 +141,9 @@ def add_task(
     task_id: str,
     title: str,
     status: str = "pending",
-    assigned_to: Optional[str] = None,
+    assigned_to: str | None = None,
     notes: str = "",
-    db_path: Optional[Path] = None,
+    db_path: Path | None = None,
 ) -> None:
     """Adds or updates a task on the living project board."""
     init_db(db_path)
@@ -148,8 +166,8 @@ def add_task(
 def update_task_status(
     task_id: str,
     status: str,
-    notes: Optional[str] = None,
-    db_path: Optional[Path] = None,
+    notes: str | None = None,
+    db_path: Path | None = None,
 ) -> bool:
     """
     Updates the status and optional notes of an existing task.
@@ -172,7 +190,7 @@ def update_task_status(
 
 
 def get_tasks(
-    status: Optional[str] = None, db_path: Optional[Path] = None
+    status: str | None = None, db_path: Path | None = None
 ) -> list[dict[str, Any]]:
     """Retrieves tasks, optionally filtered by status ('pending', 'in_progress', 'completed')."""
     init_db(db_path)
@@ -193,11 +211,11 @@ def insert_turn(
     turn_id: str,
     source: str,
     session_id: str,
-    project_path: Optional[str] = None,
+    project_path: str | None = None,
     role: str = "user",
     content: str = "",
-    timestamp: Optional[str] = None,
-    db_path: Optional[Path] = None,
+    timestamp: str | None = None,
+    db_path: Path | None = None,
 ) -> bool:
     """
     Inserts a raw conversation turn.
@@ -221,9 +239,9 @@ def insert_turn(
 
 
 def get_recent_turns(
-    source: Optional[str] = None,
+    source: str | None = None,
     limit: int = 10,
-    db_path: Optional[Path] = None,
+    db_path: Path | None = None,
 ) -> list[dict[str, Any]]:
     """
     Fetches recent conversation turns across all clients or filtered by source.
@@ -250,3 +268,19 @@ def get_recent_turns(
         rows = conn.execute(query, (limit,)).fetchall()
     conn.close()
     return [dict(r) for r in reversed(rows)]
+
+
+def get_turn(
+    turn_id: str,
+    db_path: Path | None = None,
+) -> dict[str, Any] | None:
+    """
+    Retrieves a single uncompressed conversation turn by its deterministic turn_id.
+    Guarantees zero loss of detail for Progressive Disclosure (Tier 4).
+    """
+    init_db(db_path)
+    conn = get_connection(db_path)
+    query = "SELECT * FROM conversation_turns WHERE id = ?;"
+    row = conn.execute(query, (turn_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
