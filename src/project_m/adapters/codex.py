@@ -20,9 +20,9 @@ def get_codex_db_path(custom_path: Optional[Path] = None) -> Path:
 
 
 def find_active_codex_rollout(
-    project_cwd: Optional[str] = None,
-    codex_db_path: Optional[Path] = None,
-) -> Optional[Path]:
+    project_cwd: Path | str | None = None,
+    codex_db_path: Path | None = None,
+) -> Path | None:
     """
     Finds the active session rollout JSONL file using Codex's state database in read-only mode.
     
@@ -135,10 +135,10 @@ def parse_codex_line(line_str: str) -> Optional[dict[str, Any]]:
 
 
 def harvest_codex(
-    rollout_path: Optional[Path] = None,
-    project_cwd: Optional[str] = None,
-    codex_db_path: Optional[Path] = None,
-    db_path: Optional[Path] = None,
+    rollout_path: Path | None = None,
+    project_cwd: Path | str | None = None,
+    codex_db_path: Path | None = None,
+    db_path: Path | None = None,
 ) -> int:
     """
     Reads a Codex rollout JSONL file and ingests new turns into Project-M.
