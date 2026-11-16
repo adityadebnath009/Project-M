@@ -11,7 +11,7 @@ Deterministic 4-tier context compilation. Sub-2ms latency. Zero cloud dependenci
 
 <br/>
 
-[![Tests](https://img.shields.io/badge/tests-64%20passed-10B981?style=for-the-badge&logo=pytest&logoColor=white)](https://github.com/adityadebnath009/Project-M)
+[![Tests](https://img.shields.io/badge/tests-65%20passed-10B981?style=for-the-badge&logo=pytest&logoColor=white)](https://github.com/adityadebnath009/Project-M)
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-F59E0B?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Protocol](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-EA580C?style=for-the-badge&logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
 [![Storage](https://img.shields.io/badge/storage-SQLite%20WAL%20(Local)-3B82F6?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
@@ -171,17 +171,17 @@ uv sync
 uv run project-m
 ```
 
-### One-Click AI Client Setup
-Project-M configures your local AI assistants with automated timestamped backups (`.bak`):
+### One-Click AI Client & Skill Setup
+Project-M configures your local AI assistants with automated timestamped backups (`.bak`) and installs the global **Project-M Agent Skill**:
 
 ```bash
-# Configure all supported clients (Claude Desktop, Antigravity, Codex)
+# Configure all supported clients & install Agent Skills (Claude Desktop, Antigravity, Codex)
 uv run project-m setup all
 
 # Or configure a specific client:
-uv run project-m setup claude
-uv run project-m setup antigravity
-uv run project-m setup codex
+uv run project-m setup -c claude
+uv run project-m setup -c antigravity
+uv run project-m setup -c codex
 ```
 
 #### Manual Claude Desktop Configuration
@@ -220,15 +220,15 @@ platform darwin -- Python 3.14.7, pytest-9.2.0, pluggy-1.7.0
 rootdir: /Users/adityadebnath/Projects/Project-M(MCP)
 configfile: pyproject.toml
 plugins: anyio-4.16.0, asyncio-1.4.1.post1
-collected 64 items
+collected 65 items
 
-tests/test_adapters.py ...........                                       [ 17%]
+tests/test_adapters.py ...........                                       [ 16%]
 tests/test_blackboard.py ..........                                      [ 32%]
-tests/test_cli.py ..........                                             [ 48%]
-tests/test_server.py ........                                            [ 60%]
+tests/test_cli.py ...........                                            [ 49%]
+tests/test_server.py ........                                            [ 61%]
 tests/test_storage.py .........................                          [100%]
 
-============================== 64 passed in 0.99s ==============================
+============================== 65 passed in 1.00s ==============================
 ```
 
 ---

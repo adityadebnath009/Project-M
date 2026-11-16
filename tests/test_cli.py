@@ -145,3 +145,29 @@ def test_configure_codex_toml(tmp_path: Path):
     success2, msg2 = configure_codex(repo_path=tmp_path, config_path=cfg)
     assert success2 is True
     assert "already configured" in msg2
+
+
+def test_install_skills(tmp_path: Path, monkeypatch):
+    """Verifies that install_skills installs SKILL.md into client skill directories."""
+    from project_m.setup import install_skills
+
+    fake_home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", lambda: fake_home)
+
+    skill_file = tmp_path / "SKILL.md"
+    skill_file.write_text("---\nname: test-skill\n---\n# Test Skill Content\n", encoding="utf-8")
+
+    results = install_skills(repo_path=tmp_path, clients=["claude", "antigravity", "codex"])
+    assert results["claude_skill"][0] is True
+    assert results["antigravity_skill"][0] is True
+    assert results["codex_skill"][0] is True
+
+    # Verify files were written
+    claude_dest = fake_home / ".claude" / "skills" / "project-m" / "SKILL.md"
+    antigravity_dest = fake_home / ".gemini" / "antigravity" / "skills" / "project-m" / "SKILL.md"
+    codex_dest = fake_home / ".codex" / "skills" / "project-m" / "SKILL.md"
+
+    assert claude_dest.exists()
+    assert antigravity_dest.exists()
+    assert codex_dest.exists()
+    assert "Test Skill Content" in claude_dest.read_text(encoding="utf-8")

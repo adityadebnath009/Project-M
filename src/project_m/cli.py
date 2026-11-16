@@ -327,11 +327,19 @@ def setup(client: str) -> None:
     results = run_setup(clients=clients_to_run)
 
     for client_name, (success, message) in results.items():
-        client_display = {
-            "claude": "Claude Desktop",
-            "antigravity": "Google Antigravity",
-            "codex": "OpenAI Codex",
-        }.get(client_name, client_name)
+        if client_name.endswith("_skill"):
+            base = client_name.replace("_skill", "")
+            client_display = {
+                "claude": "Claude Skill",
+                "antigravity": "Antigravity Skill",
+                "codex": "Codex Skill",
+            }.get(base, f"{base.capitalize()} Skill")
+        else:
+            client_display = {
+                "claude": "Claude Desktop",
+                "antigravity": "Google Antigravity",
+                "codex": "OpenAI Codex",
+            }.get(client_name, client_name)
 
         if success:
             console.print(f"  [bold #10B981]✓[/bold #10B981] [bold white]{client_display}[/bold white]: {message}")
