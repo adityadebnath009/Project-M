@@ -27,8 +27,7 @@ Deterministic 4-tier context compilation. Sub-2ms latency. Zero cloud dependenci
 [Interactive REPL & CLI](#-developer-cli--interactive-repl) •
 [FastMCP Tools](#-fastmcp-tools-reference) •
 [Quickstart](#-quickstart) •
-[Verification](#-verification--tests) •
-[Roadmap](#-roadmap)
+[Verification](#-verification--tests)
 
 ---
 
@@ -231,23 +230,6 @@ tests/test_storage.py .........................                          [100%]
 
 ============================== 64 passed in 0.99s ==============================
 ```
-
----
-
-## 🗺️ Roadmap
-
-- [x] **Phase 1: Feasibility PoC**
-  - Antigravity JSONL incremental streaming & Codex read-only SQLite validation.
-- [x] **Phase 2: High-Performance Storage Layer**
-  - SQLite in WAL mode with zero-lock readers, foreign keys, and 25 unit tests.
-- [x] **Phase 3: Harvester Adapters**
-  - Ambient adapters for Antigravity transcript logs and Codex session databases.
-- [x] **Phase 4: Lossless Blackboard & FastMCP Server**
-  - Deterministic 4-tier state compilation (< 450 tokens via `tiktoken`) and 7 FastMCP tools.
-- [x] **Phase 5: Developer CLI & Interactive REPL Shell**
-  - Brutalist Chevron Monogram Logo, Neofetch system screen, one-click installer, and full REPL.
-- [ ] **Phase 6: Ambient File Watcher Daemons**
-  - Optional `fsevents` / `inotify` background service automatically triggering harvesters on file changes.
 
 ---
 
