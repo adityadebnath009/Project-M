@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.jpg" alt="Project-M Logo" width="160" style="border-radius: 50%; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);" />
+<img src="assets/logo.png" alt="Project-M Logo" width="220" />
 
 # Project-M
 
