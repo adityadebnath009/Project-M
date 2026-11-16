@@ -1,12 +1,34 @@
 [project]
 name = "project-m"
 version = "0.1.0"
-description = "Add your description here"
+description = "Local-first context engine & verified blackboard synchronizing state across Claude, Codex, and Antigravity"
 readme = "README.md"
+license = { text = "MIT" }
 authors = [
-    { name = "adityadebnath009", email = "debnathaditya2005@gmail.com" }
+    { name = "Aditya Debnath", email = "debnathaditya2005@gmail.com" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.12"
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "claude-desktop",
+    "codex",
+    "antigravity",
+    "context-engine",
+    "ai-agents",
+    "sqlite-wal",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "click>=8.0.0",
     "mcp>=2.1.0",
@@ -15,8 +37,13 @@ dependencies = [
     "tiktoken>=0.14.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/adityadebnath009/Project-M"
+Repository = "https://github.com/adityadebnath009/Project-M"
+Issues = "https://github.com/adityadebnath009/Project-M/issues"
+
 [project.scripts]
-project-m = "project_m:main"
+project-m = "project_m.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]
