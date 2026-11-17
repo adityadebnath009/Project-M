@@ -92,6 +92,15 @@ flowchart TD
 | **Tier 3** | **Task Baton Graph** | Dynamic | `< 5 ms` | Cross-agent task ownership (`task_id`, `status`, `assigned_to`, `notes`). Coordinates handoffs between `@claude`, `@antigravity`, and `@codex`. |
 | **Tier 4** | **Lossless Cold Storage** | Unlimited | Indexed | Exact raw session transcripts (`transcript.jsonl` and session databases) preserved permanently with content hashes. Never sent to models directly; inspected on-demand via `get_turn()`. |
 
+### ⚡ Lexical Search with SQLite FTS5 (BM25 Ranking)
+
+Instead of relying on expensive third-party vector databases or paid embedding APIs, Project-M uses SQLite's native **FTS5 (Full-Text Search 5)** virtual table engine with **BM25 probabilistic relevance ranking**:
+
+* **Porter Stemming (`tokenize = 'porter unicode61'`)**: Automatically matches word inflections (e.g. searching `"connecting"` matches `"connect"`, `"connected"`, and `"connection"`).
+* **Okapi BM25 Ranking (`ORDER BY rank`)**: Scores results based on term frequency and document length saturation, returning the most relevant historical turns in **sub-3 milliseconds**.
+* **Zero-Lag Database Triggers**: Automatically updates the `conversation_turns_fts` index via C-level SQLite triggers (`AFTER INSERT`, `AFTER DELETE`) as turns arrive from Antigravity, Codex, or Claude.
+* **100% Offline & Free**: Instant semantic discovery over tens of thousands of past turns with zero token expenditure.
+
 ---
 
 ## 💻 Developer CLI & Interactive REPL
@@ -138,7 +147,7 @@ Launch the interactive shell anytime with `uv run project-m` or `uv run project-
 
 ## ⚡ FastMCP Tools Reference
 
-Project-M exposes 7 standard tools over Model Context Protocol:
+Project-M exposes 8 standard tools over Model Context Protocol:
 
 | Tool | Parameters | Description |
 | :--- | :--- | :--- |
@@ -149,6 +158,7 @@ Project-M exposes 7 standard tools over Model Context Protocol:
 | `get_recent_context` | `limit: int = 10` | Returns recent conversation turns across all clients (Tier 4 summary). |
 | `get_turn` | `turn_id: int` | Fetches the full uncompressed raw prompt and completion payload for a specific turn. |
 | `get_project_summary` | — | Returns diagnostic telemetry: database size, decision count, task counts, and turns. |
+| `search_context` | `query: str, limit: int = 5, role: str, source: str` | Performs sub-3ms lexical search using SQLite FTS5 with Porter stemming and BM25 ranking across all historical turns. |
 
 ---
 
@@ -156,33 +166,85 @@ Project-M exposes 7 standard tools over Model Context Protocol:
 
 ### Prerequisites
 * **macOS / Linux / Windows**
-* **Python 3.12+** (Tested on Python 3.14.7)
-* [`uv`](https://github.com/astral-sh/uv) (Extremely fast Python package manager)
+* **Python 3.12+** (Tested up to Python 3.14.7)
+* [`uv`](https://github.com/astral-sh/uv) (Extremely fast Python package runner)
 
+If you don't have `uv` installed yet:
 ```bash
-# 1. Clone repository
-git clone https://github.com/adityadebnath009/Project-M.git
-cd Project-M
+# macOS / Linux:
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# 2. Sync dependencies
-uv sync
-
-# 3. Launch the interactive REPL
-uv run project-m
+# Windows (PowerShell):
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-### One-Click AI Client & Skill Setup
-Project-M configures your local AI assistants with automated timestamped backups (`.bak`) and installs the global **Project-M Agent Skill**:
+---
+
+### Option A: The Fastest Way (Zero-Install / Run Instantly)
+
+You don’t even need to clone the repository. Run this single command inside **any project directory**:
 
 ```bash
-# Configure all supported clients & install Agent Skills (Claude Desktop, Antigravity, Codex)
-uv run project-m setup all
+uvx --from git+https://github.com/adityadebnath009/Project-M.git project-m
+```
 
-# Or configure a specific client:
+`uvx` fetches Project-M into an isolated environment, renders the **copper Brutalist Chevron logo**, displays live project telemetry, and immediately drops you into the interactive shell:
+```
+project-m ❯ 
+```
+Type `/board` to view the living context card, or `/help` for all commands!
+
+---
+
+### Option B: The Complete Setup (Clone & Connect to Claude / Antigravity / Codex)
+
+If you want Project-M permanently linked with your local AI desktop assistants:
+
+```bash
+# 1. Clone repository & sync dependencies
+git clone https://github.com/adityadebnath009/Project-M.git
+cd Project-M
+uv sync
+
+# 2. Run the 1-Click Auto-Installer
+uv run project-m setup all
+```
+
+**What `project-m setup all` automatically does:**
+1. Detects **Claude Desktop** (`claude_desktop_config.json`), **Google Antigravity** (`mcp_config.json`), and **Codex** (`config.toml`).
+2. Creates timestamped safety backups (`.bak`) of your existing configs.
+3. Injects the **Project-M FastMCP Server** over stdio.
+4. Automatically installs the **Project-M Agent Skill** (`SKILL.md`) into your global agent directories (`~/.claude/skills`, `~/.gemini/antigravity/skills`, `~/.codex/skills`).
+
+*Restart Claude Desktop or Antigravity and check the tools (🔨) menu—Project-M with all 8 tools will be active!*
+
+You can also target a specific client:
+```bash
 uv run project-m setup -c claude
 uv run project-m setup -c antigravity
 uv run project-m setup -c codex
 ```
+
+---
+
+### Option C: Install Globally as a Native Terminal Command
+
+If you want `project-m` permanently available in your shell like `git` or `docker`:
+
+```bash
+uv tool install git+https://github.com/adityadebnath009/Project-M.git
+```
+
+Now navigate to **any repository** on your computer and simply run:
+
+```bash
+project-m          # Launch interactive Claude-Code-style REPL
+project-m board    # Inspect compiled Tier 1 State Card (< 450 tokens)
+project-m status   # View context health & active warnings
+project-m fetch    # Render Neofetch specs screen
+```
+
+---
 
 #### Manual Claude Desktop Configuration
 If you prefer manual configuration, add Project-M to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
@@ -220,15 +282,18 @@ platform darwin -- Python 3.14.7, pytest-9.2.0, pluggy-1.7.0
 rootdir: /Users/adityadebnath/Projects/Project-M(MCP)
 configfile: pyproject.toml
 plugins: anyio-4.16.0, asyncio-1.4.1.post1
-collected 65 items
+collected 102 items
 
-tests/test_adapters.py ...........                                       [ 16%]
-tests/test_blackboard.py ..........                                      [ 32%]
-tests/test_cli.py ...........                                            [ 49%]
-tests/test_server.py ........                                            [ 61%]
+tests/test_adapters.py ...........                                       [ 10%]
+tests/test_blackboard.py ..........                                      [ 20%]
+tests/test_claude_code.py .........                                      [ 29%]
+tests/test_cli.py ...........                                            [ 40%]
+tests/test_fts5_search.py .....                                          [ 45%]
+tests/test_multi_agent_e2e.py ......................                     [ 66%]
+tests/test_server.py .........                                           [ 75%]
 tests/test_storage.py .........................                          [100%]
 
-============================== 65 passed in 1.00s ==============================
+============================= 102 passed in 3.02s ==============================
 ```
 
 ---
