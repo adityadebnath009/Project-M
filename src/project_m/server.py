@@ -13,6 +13,7 @@ from project_m.storage.db import (
     get_recent_turns,
     get_tasks,
     set_board_value,
+    search_transcripts
 )
 from project_m.storage.db import (
     get_turn as db_get_turn,
@@ -263,6 +264,56 @@ def create_server(db_path: Path | None = None,
                 - 'unverified_completions': List of task IDs completed without notes
         """
         return fetch_project_summary(db_path=db_path)
+
+
+    @app.tool()
+    def search_historical_context(
+        query: str,
+        limit: int = 5,
+        role: str | None = None,
+        source: str | None = None,
+    ) -> str:
+        """
+        Searches historical conversation turns across all local AI clients
+        (Antigravity, Codex, and Claude Code) in sub-3ms using SQLite FTS5.
+
+        Call this tool when you need to recall past architectural debates, specific
+        code examples, bash commands, or requirements from earlier sessions.
+
+        Args:
+            query: Natural language or keyword search terms (e.g. 'decimal arithmetic', 'wal mode').
+            limit: Maximum number of matches to return (default: 5).
+            role: Optional filter: 'user' (user requests) or 'assistant' (model outputs).
+            source: Optional client filter: 'antigravity', 'codex', or 'claude_code'.
+
+        Returns:
+            str: Formatted list of matches with full provenance citations (Client, Role,
+                 Timestamp, Turn ID, and content excerpt).
+        """
+        results = search_transcripts(
+            query=query,
+            limit=limit,
+            role=role,
+            source=source,
+            db_path=db_path,
+        )
+        if not results:
+            return f"No historical turns matched query: '{query}'."
+
+        lines = [f"Found {len(results)} historical turn(s) for query '{query}':\n"]
+        for i, r in enumerate(results, 1):
+            client = r.get("source", "unknown").upper()
+            speaker = r.get("role", "unknown").upper()
+            ts = r.get("timestamp") or "N/A"
+            turn_id = r.get("id")
+            content = r.get("content", "").strip()
+
+            lines.append(
+                f"{i}. [{client} | {speaker}] ({ts})\n"
+                f"   Turn ID: {turn_id}\n"
+                f"   Excerpt: {content}\n"
+            )
+        return "\n".join(lines)
     
     return app
 

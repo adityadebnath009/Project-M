@@ -31,9 +31,10 @@ async def test_server_tool_registration(test_db: Path):
         "update_task",
         "get_recent_context",
         "get_turn",
+        "search_historical_context",
     }
     assert expected_tools.issubset(tool_names)
-    assert len(tools) == 7
+    assert len(tools) == 8
 
 
 @pytest.mark.asyncio
@@ -207,3 +208,34 @@ async def test_get_turn_tool_lossless(test_db: Path):
     not_found = await server.call_tool("get_turn", {"turn_id": "nonexistent-id"})
     assert not_found.is_error is False
     assert "not found" in not_found.content[0].text
+
+
+@pytest.mark.asyncio
+async def test_search_historical_context_tool(test_db: Path):
+    """Verifies lexical FTS5 search tool across historical client turns."""
+    insert_turn(
+        "turn-fts-1",
+        "claude_code",
+        "session-101",
+        "/path/to/repo",
+        "user",
+        "Let us use Decimal arithmetic for currency calculations.",
+        "2026-11-17T11:00:00",
+        db_path=test_db,
+    )
+
+    server = create_server(db_path=test_db)
+
+    # 1. Search with matching term (Porter stemming: 'calculate' matches 'calculations')
+    result = await server.call_tool("search_historical_context", {"query": "calculate"})
+    assert result.is_error is False
+    output_text = result.content[0].text
+    assert "Found 1 historical turn(s)" in output_text
+    assert "[CLAUDE_CODE | USER]" in output_text
+    assert "Decimal arithmetic" in output_text
+    assert "Turn ID: turn-fts-1" in output_text
+
+    # 2. Search with non-matching term
+    no_match = await server.call_tool("search_historical_context", {"query": "nonexistentterm"})
+    assert no_match.is_error is False
+    assert "No historical turns matched" in no_match.content[0].text

@@ -14,6 +14,7 @@ from typing import Any
 import tiktoken
 
 from project_m.adapters.antigravity import harvest_antigravity
+from project_m.adapters.claude_code import harvest_claude_code
 from project_m.adapters.codex import harvest_codex
 from project_m.storage.db import (
     get_board,
@@ -60,7 +61,21 @@ def compile_briefing_card(
     - 🔄 Ambient Context (Recent turns, budget-permitting)
     """
     board = get_board(db_path)
-    decisions = get_decisions(limit=max_decisions, status="accepted", newest_first=True, db_path=db_path)
+    # Dynamic capacity sizing based on target_tokens budget
+    if target_tokens <= 250:
+        decision_limit = 1
+        task_limit = 1
+    elif target_tokens <= 350:
+        decision_limit = 2
+        task_limit = 2
+    elif target_tokens <= 500:
+        decision_limit = 3
+        task_limit = 3
+    else:
+        decision_limit = max_decisions
+        task_limit = 5
+
+    decisions = get_decisions(limit=decision_limit, status="accepted", newest_first=True, db_path=db_path)
     in_progress_tasks = get_tasks(status="in_progress", db_path=db_path)
     pending_tasks = get_tasks(status="pending", db_path=db_path)
     completed_tasks = get_tasks(status="completed", db_path=db_path)
@@ -91,8 +106,11 @@ def compile_briefing_card(
         for d in decisions:
             decided_by = d.get("decided_by", "unknown")
             created_at = d.get("created_at", "")[:10]
+            rationale = d['rationale']
+            if len(rationale) > 100:
+                rationale = rationale[:97] + "..."
             d_lines.append(
-                f"- **[{d['id']}] {d['title']}**: {d['rationale']} "
+                f"- **[{d['id']}] {d['title']}**: {rationale} "
                 f"*(Recorded by {decided_by}, {created_at})*"
             )
         sections.append("\n".join(d_lines))
@@ -100,14 +118,18 @@ def compile_briefing_card(
     # 4. Active Tasks & Handoff Baton
     if in_progress_tasks or pending_tasks or completed_tasks:
         t_lines = ["### 📋 Active Tasks"]
-        for t in in_progress_tasks:
+        for t in in_progress_tasks[:task_limit]:
             owner = t.get("assigned_to") or "UNASSIGNED"
             notes = f" — *{t['notes']}*" if t.get("notes") else ""
             t_lines.append(f"- **[IN PROGRESS]** `{t['id']}`: {t['title']} (Owner: @{owner}){notes}")
+        if len(in_progress_tasks) > task_limit:
+            t_lines.append(f"- *... and {len(in_progress_tasks) - task_limit} more in-progress task(s)*")
 
-        for t in pending_tasks:
+        for t in pending_tasks[:task_limit]:
             owner = f" (Assigned: @{t['assigned_to']})" if t.get("assigned_to") else ""
             t_lines.append(f"- **[PENDING]** `{t['id']}`: {t['title']}{owner}")
+        if len(pending_tasks) > task_limit:
+            t_lines.append(f"- *... and {len(pending_tasks) - task_limit} more pending task(s)*")
 
         if completed_tasks:
             t_lines.append(f"- *Completed ({len(completed_tasks)} tasks)*")
@@ -128,8 +150,10 @@ def compile_briefing_card(
 
     if warnings:
         w_lines = ["### ⚠️ Attention Required"]
-        for w in warnings:
+        for w in warnings[:3]:
             w_lines.append(f"- {w}")
+        if len(warnings) > 3:
+            w_lines.append(f"- *... and {len(warnings) - 3} additional warning(s)*")
         sections.append("\n".join(w_lines))
 
     # Preliminary card text before ambient turns
@@ -204,6 +228,7 @@ def sync_and_compile(
     and returns the freshly compiled Tier 1 State Card.
     """
     harvest_antigravity(db_path=db_path)
+    harvest_claude_code(db_path=db_path, project_cwd=project_cwd)
     harvest_codex(project_cwd=project_cwd, db_path=db_path)
     return compile_briefing_card(db_path=db_path, target_tokens=target_tokens)
 

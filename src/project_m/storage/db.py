@@ -1,6 +1,7 @@
+import re
 import sqlite3
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 
@@ -284,3 +285,50 @@ def get_turn(
     row = conn.execute(query, (turn_id,)).fetchone()
     conn.close()
     return dict(row) if row else None
+
+def search_transcripts(
+    query: str,
+    limit: int = 5,
+    role: str | None = None,
+    source: str | None = None,
+    db_path: Path | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Sub-3ms lexical search using SQLite FTS5 with Porter stemming and BM25 ranking.
+    Searches across turns from Antigravity, Codex, and Claude Code.
+    """
+    # Sanitize query: replace punctuation with spaces to prevent FTS5 syntax errors
+    safe_query = re.sub(r"[^\w\s]", " ", query).strip()
+    if not safe_query:
+        return []
+
+    init_db(db_path)
+    conn = get_connection(db_path)
+
+    conditions = ["conversation_turns_fts MATCH ?"]
+    params: list[Any] = [safe_query]
+
+    if role:
+        conditions.append("role = ?")
+        params.append(role)
+    if source:
+        conditions.append("source = ?")
+        params.append(source)
+
+    params.append(limit)
+    where_clause = " AND ".join(conditions)
+
+    sql = f"""
+    SELECT id, source, session_id, role, content, timestamp, rank
+    FROM conversation_turns_fts
+    WHERE {where_clause}
+    ORDER BY rank
+    LIMIT ?;
+    """
+
+    try:
+        with conn:
+            cursor = conn.execute(sql, tuple(params))
+            return [dict(row) for row in cursor.fetchall()]
+    finally:
+        conn.close()

@@ -36,3 +36,28 @@ CREATE TABLE IF NOT EXISTS conversation_turns (
 CREATE INDEX IF NOT EXISTS idx_turns_source ON conversation_turns(source);
 CREATE INDEX IF NOT EXISTS idx_turns_created ON conversation_turns(created_at);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+
+
+
+-- Full-Text Search (FTS5) over historical conversation turns
+CREATE VIRTUAL TABLE IF NOT EXISTS conversation_turns_fts USING fts5(
+    id UNINDEXED,
+    source,
+    session_id UNINDEXED,
+    role,
+    content,
+    timestamp UNINDEXED,
+    tokenize = 'porter unicode61'
+);
+
+-- Real-time sync triggers
+CREATE TRIGGER IF NOT EXISTS trg_turns_after_insert 
+AFTER INSERT ON conversation_turns BEGIN
+    INSERT INTO conversation_turns_fts (id, source, session_id, role, content, timestamp)
+    VALUES (new.id, new.source, new.session_id, new.role, new.content, new.timestamp);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_turns_after_delete 
+AFTER DELETE ON conversation_turns BEGIN
+    DELETE FROM conversation_turns_fts WHERE id = old.id;
+END;
