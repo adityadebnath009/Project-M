@@ -1,6 +1,6 @@
 [project]
 name = "project-m"
-version = "0.1.0"
+version = "0.1.1"
 description = "Local-first context engine & verified blackboard synchronizing state across Claude, Codex, and Antigravity"
 readme = "README.md"
 license = { text = "MIT" }

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="bg-radial" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#1E1610" />
+      <stop offset="60%" stop-color="#0C0E12" />
+      <stop offset="100%" stop-color="#07080A" />
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#F59E0B" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg-radial)" />
+  
+  <!-- Subtle Grid Accent -->
+  <g opacity="0.05" stroke="#FFFFFF" stroke-width="1">
+    <line x1="0" y1="105" x2="1200" y2="105" />
+    <line x1="0" y1="210" x2="1200" y2="210" />
+    <line x1="0" y1="315" x2="1200" y2="315" />
+    <line x1="0" y1="420" x2="1200" y2="420" />
+    <line x1="0" y1="525" x2="1200" y2="525" />
+    <line x1="200" y1="0" x2="200" y2="630" />
+    <line x1="400" y1="0" x2="400" y2="630" />
+    <line x1="600" y1="0" x2="600" y2="630" />
+    <line x1="800" y1="0" x2="800" y2="630" />
+    <line x1="1000" y1="0" x2="1000" y2="630" />
+  </g>
+
+  <!-- Glow behind Logo -->
+  <circle cx="600" cy="220" r="260" fill="url(#glow)" />
+
+  <!-- The Exact Project-M Logo from Repository -->
+  <image href="data:image/png;base64,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" x="460" y="110" width="280" height="198" preserveAspectRatio="xMidYMid meet" />
+
+  <!-- Badge Pill -->
+  <g transform="translate(485, 335)">
+    <rect width="230" height="34" rx="17" fill="#271C12" stroke="#D97706" stroke-width="1.5" />
+    <circle cx="22" cy="17" r="4" fill="#10B981" />
+    <text x="36" y="22" fill="#F59E0B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="1.5">PROJECT-M  •  v0.2.0</text>
+  </g>
+
+  <!-- Headline -->
+  <text x="600" y="425" text-anchor="middle" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="42" font-weight="800" letter-spacing="-0.5">
+    Newer versions with new features
+  </text>
+  <text x="600" y="480" text-anchor="middle" fill="#F59E0B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="42" font-weight="800" letter-spacing="-0.5">
+    are coming soon.
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="540" text-anchor="middle" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="18" font-weight="400" letter-spacing="0.2">
+    Ambient Context Engine  •  Autonomous Watchers  •  Multi-Agent Collaboration
+  </text>
+
+  <!-- Bottom dots -->
+  <g transform="translate(510, 580)">
+    <circle cx="0" cy="0" r="4" fill="#F59E0B" />
+    <circle cx="25" cy="0" r="4" fill="#F97316" />
+    <circle cx="50" cy="0" r="4" fill="#EF4444" />
+    <circle cx="75" cy="0" r="4" fill="#EC4899" />
+    <circle cx="100" cy="0" r="4" fill="#8B5CF6" />
+    <circle cx="125" cy="0" r="4" fill="#3B82F6" />
+    <circle cx="150" cy="0" r="4" fill="#10B981" />
+    <circle cx="175" cy="0" r="4" fill="#FFFFFF" />
+  </g>
+</svg>

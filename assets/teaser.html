@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project-M: Coming Soon</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #08090C;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .poster-card {
+      width: 1200px;
+      height: 630px;
+      position: relative;
+      background: radial-gradient(circle at 50% 35%, #221810 0%, #0D1017 60%, #06080B 100%);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 100px rgba(245, 158, 11, 0.08);
+    }
+    /* Grid background effect */
+    .grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+    .glow-radial {
+      position: absolute;
+      top: 15%;
+      width: 400px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0) 70%);
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(39, 28, 18, 0.85);
+      border: 1px solid #D97706;
+      border-radius: 9999px;
+      color: #F59E0B;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      z-index: 2;
+    }
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      background: #10B981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10B981;
+    }
+    .logo-container {
+      position: relative;
+      z-index: 2;
+      margin-bottom: 20px;
+    }
+    .logo-img {
+      width: 260px;
+      height: auto;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 10px 30px rgba(245, 158, 11, 0.25));
+    }
+    .headline {
+      z-index: 2;
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      text-align: center;
+      color: #FFFFFF;
+      margin-bottom: 12px;
+    }
+    .headline-highlight {
+      background: linear-gradient(135deg, #F59E0B 0%, #EA580C 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtext {
+      z-index: 2;
+      font-size: 17px;
+      color: #94A3B8;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .dots-container {
+      z-index: 2;
+      display: flex;
+      gap: 10px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div class="poster-card">
+    <div class="grid-lines"></div>
+    <div class="glow-radial"></div>
+
+    <div class="badge">
+      <span class="badge-dot"></span>
+      PROJECT-M &bull; NEXT MILESTONES
+    </div>
+
+    <div class="logo-container">
+      <img src="logo.png" alt="Project-M Logo" class="logo-img">
+    </div>
+
+    <h1 class="headline">
+      Newer versions with new features<br>
+      <span class="headline-highlight">are coming soon.</span>
+    </h1>
+
+    <p class="subtext">
+      Ambient Local Context Engine &bull; Autonomous File Watchers &bull; Multi-Agent Orchestration
+    </p>
+
+    <div class="dots-container">
+      <span class="dot" style="background: #F59E0B;"></span>
+      <span class="dot" style="background: #F97316;"></span>
+      <span class="dot" style="background: #EF4444;"></span>
+      <span class="dot" style="background: #EC4899;"></span>
+      <span class="dot" style="background: #8B5CF6;"></span>
+      <span class="dot" style="background: #3B82F6;"></span>
+      <span class="dot" style="background: #10B981;"></span>
+      <span class="dot" style="background: #FFFFFF;"></span>
+    </div>
+  </div>
+</body>
+</html>
