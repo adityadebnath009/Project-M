@@ -19,6 +19,7 @@ Deterministic 4-tier context compilation. Sub-2ms latency. Zero cloud dependenci
 [![License](https://img.shields.io/badge/license-MIT-gray?style=for-the-badge)](LICENSE)
 
 [![Reviewed by HOL Guard](https://img.shields.io/badge/HOL_Guard%20|%20project_m-2E5AAC?logo=shield&logoColor=white)](https://hol.org/guard/extensions/mcp.project-m)
+[![mcp-project-m MCP server – quality and maintenance score on Glama](https://glama.ai/mcp/servers/adityadebnath009/Project-M/badges/score.svg)](https://glama.ai/mcp/servers/adityadebnath009/Project-M)
 [![M8ven Score](https://m8ven.ai/badge/mcp/adityadebnath009-project-m-177ur4?v=c5dbde172e8a36a3f855037e0982192b)](https://m8ven.ai/mcp/adityadebnath009-project-m-177ur4?s=readme)
 
 <br/>
