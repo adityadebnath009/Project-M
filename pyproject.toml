@@ -1,6 +1,6 @@
 [project]
-name = "project-m"
-version = "0.1.1"
+name = "mcp-project-m"
+version = "0.1.2"
 description = "Local-first context engine & verified blackboard synchronizing state across Claude, Codex, and Antigravity"
 readme = "README.md"
 license = { text = "MIT" }
@@ -44,10 +44,14 @@ Issues = "https://github.com/adityadebnath009/Project-M/issues"
 
 [project.scripts]
 project-m = "project_m.cli:main"
+mcp-project-m = "project_m.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "project_m"
 
 [dependency-groups]
 dev = [

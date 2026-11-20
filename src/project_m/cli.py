@@ -39,7 +39,7 @@ def create_branded_header(title: str, subtitle: str, status_badge: str | None = 
 
     left = Text()
     left.append("  ◆ PROJECT-M ", style="bold #F59E0B")
-    left.append("v0.1.1", style="dim")
+    left.append("v0.1.2", style="dim")
     left.append(f"  •  {title}", style="bold white")
     if subtitle:
         left.append(f"\n    {subtitle}", style="dim")
@@ -122,7 +122,7 @@ def render_fetch_screen() -> None:
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-@click.version_option(version="0.1.1", prog_name="project-m")
+@click.version_option(version="0.1.2", prog_name="project-m")
 def main(ctx: click.Context) -> None:
     """◆ Project-M: Deterministic local-first context engine for AI agents."""
     if ctx.invoked_subcommand is None:
